@@ -1,50 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
-using System.Windows.Forms;
+
 
 namespace art
 {
-    public enum Colors
-    {
-        Red,
-        Black,
-        Blue,
-        Green
-    }
-
-
     public class Line
     {
-        public int positionX;
-        public int positionY;
-        public int positionX2;
-        public int positionY2;
+        private int positionX;
+        private int positionY;
+        private int positionX2;
+        private int positionY2;
+        public Rectangle rectangle1;
+        public Rectangle rectangle2;
 
-        public enum ParametrsLine
-        {
-            positionX,
-            positionY,
-            positionX2,
-            positionY2
-        }
 
         public int ItLineInRectangle(List<Line> lines, Rectangle rectangle)
         {
             foreach (Line line in lines)
             {
-                var lineX = line.positionX;
-                var lineY = line.positionY;
-                var lineX2 = line.positionX2;
-                var lineY2 = line.positionY2;
-                var recX = rectangle.positionX;
-                var recY = rectangle.positionY;
-                var recXX = recX + rectangle.heightRectangle;
-                var recYY = recY + rectangle.widthRectangle;
+                int lineX = line.positionX;
+                int lineY = line.positionY;
+                int lineX2 = line.positionX2;
+                int lineY2 = line.positionY2;
+                int recX = rectangle.positionX;
+                int recY = rectangle.positionY;
+                int recXX = recX + rectangle.heightRectangle;
+                int recYY = recY + rectangle.widthRectangle;
                 if (lineX >= recX & lineX <= recXX)
                 {
                     if (lineY >= recY & lineY <= recYY)
@@ -64,19 +46,16 @@ namespace art
             return 0;
         }
 
-
-        public void ChekLine()
+        public void LineDrowNew(Graphics g, Rectangle _rectangle, Rectangle _rectangle2)
         {
-        }
-
-        public void LineDrow(Graphics g, Int32 x1, Int32 y1, Int32 x2, Int32 y2, Color color)
-        {
-            Pen pen = new Pen(color);
-            g.DrawLine(pen, x1, y1, x2, y2);
-            positionX = x1;
-            positionY = y1;
-            positionX2 = x2;
-            positionY2 = y2;
+            positionX = _rectangle.positionX + _rectangle.widthRectangle / 2; //координата середины прямоугольника
+            positionY = _rectangle.positionY + _rectangle.heightRectangle / 2;
+            positionX2 = _rectangle2.positionX + _rectangle2.widthRectangle / 2;
+            positionY2 = _rectangle2.positionY + _rectangle2.heightRectangle / 2;
+            rectangle1 = _rectangle;
+            rectangle2 = _rectangle2;
+            Pen pen = new Pen(Color.Black);
+            g.DrawLine(pen, positionX, positionY, positionX2, positionY2);
         }
     }
 
@@ -88,14 +67,13 @@ namespace art
             if (rectangles.Count > 0)
                 foreach (Rectangle rectangle in rectangles)
                 {
-                    rectangle.rectangleDrow(g, Convert.ToInt32(rectangle.positionX),
-                        Convert.ToInt32(rectangle.positionY), Convert.ToInt32(rectangle.widthRectangle),
-                        Convert.ToInt32(rectangle.heightRectangle), Color.Black);
+                    rectangle.RectangleDrow(g, rectangle.positionX, rectangle.positionY, rectangle.widthRectangle,
+                        rectangle.heightRectangle);
                 }
             if (lines.Count > 0)
                 foreach (Line line in lines)
                 {
-                    line.LineDrow(g, line.positionX, line.positionY, line.positionX2, line.positionY2, Color.Black);
+                    line.LineDrowNew(g, line.rectangle1, line.rectangle2);
                 }
         }
     }
@@ -107,27 +85,26 @@ namespace art
         public int widthRectangle;
         public int heightRectangle;
 
-        public void rectangleDrow(Graphics g, Int32 x1, Int32 y1, Int32 widthRectangl, Int32 heightRectangl, Color color)
+        public void RectangleDrow(Graphics g, Int32 _x1, Int32 _y1, Int32 _widthRectangl, Int32 _heightRectangl)
         {
-            Pen pen = new Pen(color);
-            g.DrawRectangle(pen, x1, y1, widthRectangl, heightRectangl);
-            positionX = x1;
-            positionY = y1;
-            widthRectangle = widthRectangl;
-            heightRectangle = heightRectangl;
+            Pen pen = new Pen(Color.Black);
+
+            positionX = _x1;
+            positionY = _y1;
+            widthRectangle = _widthRectangl;
+            heightRectangle = _heightRectangl;
+            g.DrawRectangle(pen, _x1, _y1, _widthRectangl, _heightRectangl);
         }
 
-        public bool rectenglChek(int xx1, int yy1)
+        public bool RectenglChek(int _x1, int _y1)
         {
-            if (positionX < xx1 & xx1 < positionX + widthRectangle)
+            if (positionX < _x1 & _x1 < positionX + widthRectangle)
             {
-                if (positionY < yy1 & yy1 < positionY + heightRectangle)
+                if (positionY < _y1 & _y1 < positionY + heightRectangle)
                 {
-                    //MessageBox.Show("тут");
                     return true;
                 }
             }
-
             return false;
         }
     }
