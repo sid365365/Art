@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 
 namespace art
@@ -17,7 +18,7 @@ namespace art
 
         public Form1()
         {
-            pictureBox1 = new PictureBox { Width = 500, Height = 500 };
+            pictureBox1 = new PictureBox {Width = 500, Height = 500};
             bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 
             Graphics graphics = Graphics.FromImage(bmp);
@@ -59,20 +60,9 @@ namespace art
 
             label1.Text = "" + X1 + "";
             label2.Text = "" + Y1 + "";
-
-            if (radioButton2.Checked)
-            {
-                foreach (Rectangle rectangle in RectangleList)
-                {
-                    if (rectangle.RectenglChek(e.X, e.Y))
-                    {
-                        MessageBox.Show("В этом месте уже есть прямоугольник");
-                    }
-                }
-            }
         }
 
-        public void checkSecondRectangle(int X2, int Y2, Rectangle rectangle)
+        public void CheckSecondRectangle(int X2, int Y2, Rectangle rectangle)
         {
             foreach (Rectangle rectangle2 in RectangleList)
             {
@@ -85,6 +75,32 @@ namespace art
                     LineList.Add(lineToDrow);
                 }
             }
+        }
+
+        public int[] ChengCoordinate(int X1, int Y1, int X2, int Y2)
+        {
+            int widthRectangle = X2 - X1;
+            int heightRectangle = Y2 - Y1;
+            if (widthRectangle < 0 & heightRectangle < 0)
+            {
+                int[] parametrArray = {X2, Y2, X1 - X2, Y1 - Y2};
+                return parametrArray;
+            }
+            if (widthRectangle < 0 || heightRectangle < 0)
+            {
+                if (widthRectangle < 0)
+                {
+                    int[] parametrArray = {X2, Y1, X1 - X2, heightRectangle};
+                    return parametrArray;
+                }
+                if (heightRectangle < 0)
+                {
+                    int[] parametrArray = {X1, Y2, widthRectangle, Y1 - Y2};
+                    return parametrArray;
+                }
+            }
+            int[] parametrArray1 = {X1, Y1, widthRectangle, heightRectangle};
+            return parametrArray1;
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e) //событие отпускание лкм
@@ -102,51 +118,18 @@ namespace art
                 {
                     if (rectangle.RectenglChek(X1, Y1))
                     {
-                        checkSecondRectangle(X2, Y2, rectangle);
+                        CheckSecondRectangle(X2, Y2, rectangle);
                     }
                 }
             }
 
             if (radioButton2.Checked) //рисуем прямоугольники
             {
-                bool i = true;
+                int[] parametrArr = ChengCoordinate(X1, Y1, X2, Y2);
                 Graphics g = Graphics.FromImage(bmp);
                 pictureBox1.Image = bmp;
                 Rectangle rectangleToDrow = new Rectangle();
-                int widthRectangle = X2 - X1;
-                int heightRectangle = Y2 - Y1;
-                foreach (Rectangle rectangle in RectangleList)
-                {
-                    if (rectangle.RectenglChek(e.X, e.Y))
-                    {
-                        MessageBox.Show("Попытка нарисовать прямоугольник на прямоугольнике");
-                        i = false;
-                    }
-                }
-                if (i)
-                {
-                    if (widthRectangle < 0 || heightRectangle < 0)
-                    {
-                        if (widthRectangle < 0)
-                        {
-                            rectangleToDrow.RectangleDrow(g, X2, Y1, X1 - X2, heightRectangle);
-                        }
-                        if (heightRectangle < 0)
-                        {
-                            rectangleToDrow.RectangleDrow(g, X1, Y2, widthRectangle, Y1 - Y2);
-                        }
-                        if (widthRectangle < 0 & heightRectangle < 0)
-                        {
-                            rectangleToDrow.RectangleDrow(g, X2, Y2, X1 - X2, Y1 - Y2);
-                        }
-                    }
-                    else
-                    {
-                        rectangleToDrow.RectangleDrow(g, X1, Y1, widthRectangle, heightRectangle);
-                    }
-                }
-
-
+                rectangleToDrow.RectangleDrow(g, parametrArr[0], parametrArr[1], parametrArr[2], parametrArr[3]);
                 RectangleList.Add(rectangleToDrow);
             }
             if (radioButton3.Checked)
