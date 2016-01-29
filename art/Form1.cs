@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace art
 {
     public partial class Form1 : Form
     {
-        public bool status = true;
         private readonly Bitmap bmp;
         public Graphics ariaG;
-        public bool changeBegin = false;
-        public int rectenglNumer;
-        public Line lineForChng; // линия, которая изменяется
-        public int lineI; // какой из концов линии в квадрате
+        public XYkoord XY1;
+        public XYkoord XY2;
+        public List<Line> LineList = new List<Line>();
+        public List<Rectangle> RectanglesList = new List<Rectangle>();
 
         public Form1()
         {
@@ -24,18 +23,14 @@ namespace art
             Graphics graphics = Graphics.FromImage(bmp);
             ariaG = pictureBox1.CreateGraphics();
             graphics.Clear(Color.White);
-
             InitializeComponent();
             pictureBox1.Image = bmp;
         }
 
-        private List<Line> LineList = new List<Line>();
-        private List<Rectangle> RectangleList = new List<Rectangle>();
-
         private void button1_Click(object sender, EventArgs e) //очистить
         {
             LineList.Clear();
-            RectangleList.Clear();
+            RectanglesList.Clear();
             Graphics graphics = Graphics.FromImage(bmp);
             ariaG = pictureBox1.CreateGraphics();
             graphics.Clear(Color.White);
@@ -54,106 +49,70 @@ namespace art
 
         public void pictureBox1_MouseDown(object sender, MouseEventArgs e) //событие нажатия лкм
         {
-            status = true;
-            int X1 = e.X; //место нажатия
-            int Y1 = e.Y;
-
-            label1.Text = "" + X1 + "";
-            label2.Text = "" + Y1 + "";
+            XY1 = new XYkoord {X = e.X, Y = e.Y};
         }
 
-        public void CheckSecondRectangle(int X2, int Y2, Rectangle rectangle)
+        private void nextForeach(Graphics g, Rectangle rectangle11)
         {
-            foreach (Rectangle rectangle2 in RectangleList)
+            foreach (Rectangle rectangle22 in RectanglesList)
             {
-                if (rectangle2.RectenglChek(X2, Y2))
+                if (RectenglChek.RectenglCheked(XY2, rectangle22))
                 {
-                    Graphics g = Graphics.FromImage(bmp);
-                    pictureBox1.Image = bmp;
-                    var lineToDrow = new Line();
-                    lineToDrow.LineDrowNew(g, rectangle, rectangle2);
-                    LineList.Add(lineToDrow);
+                    Drowing.LineDrow(g, rectangle11, rectangle22, LineList);
                 }
             }
-        }
-
-        public int[] ChengCoordinate(int X1, int Y1, int X2, int Y2)
-        {
-            int widthRectangle = X2 - X1;
-            int heightRectangle = Y2 - Y1;
-            if (widthRectangle < 0 & heightRectangle < 0)
-            {
-                int[] parametrArray = {X2, Y2, X1 - X2, Y1 - Y2};
-                return parametrArray;
-            }
-            if (widthRectangle < 0 || heightRectangle < 0)
-            {
-                if (widthRectangle < 0)
-                {
-                    int[] parametrArray = {X2, Y1, X1 - X2, heightRectangle};
-                    return parametrArray;
-                }
-                if (heightRectangle < 0)
-                {
-                    int[] parametrArray = {X1, Y2, widthRectangle, Y1 - Y2};
-                    return parametrArray;
-                }
-            }
-            int[] parametrArray1 = {X1, Y1, widthRectangle, heightRectangle};
-            return parametrArray1;
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e) //событие отпускание лкм
         {
-            status = false;
-            int X1 = Convert.ToInt32(label1.Text);
-            int Y1 = Convert.ToInt32(label2.Text);
-            int X2 = e.X;
-            int Y2 = e.Y;
-
-
+            XY2 = new XYkoord {X = e.X, Y = e.Y};
+            Graphics g = Graphics.FromImage(bmp);
+            pictureBox1.Image = bmp;
             if (radioButton1.Checked) //рисуем линию
             {
-                foreach (Rectangle rectangle in RectangleList)
+                foreach (Rectangle rectangle11 in RectanglesList)
                 {
-                    if (rectangle.RectenglChek(X1, Y1))
+                    if (RectenglChek.RectenglCheked(XY1, rectangle11))
                     {
-                        CheckSecondRectangle(X2, Y2, rectangle);
+                        nextForeach(g, rectangle11);
                     }
                 }
             }
-
             if (radioButton2.Checked) //рисуем прямоугольники
             {
-                int[] parametrArr = ChengCoordinate(X1, Y1, X2, Y2);
-                Graphics g = Graphics.FromImage(bmp);
-                pictureBox1.Image = bmp;
-                Rectangle rectangleToDrow = new Rectangle();
-                rectangleToDrow.RectangleDrow(g, parametrArr[0], parametrArr[1], parametrArr[2], parametrArr[3]);
-                RectangleList.Add(rectangleToDrow);
+                Drowing.RectangleDrow(g, XY1, XY2, RectanglesList);
             }
             if (radioButton3.Checked)
             {
                 Rectangle rec = new Rectangle();
                 rec = null;
-                foreach (Rectangle rectangle in RectangleList)
+                foreach (Rectangle rectangle in RectanglesList)
                 {
-                    if (rectangle.RectenglChek(X1, Y1))
+                    if (RectenglChek.RectenglCheked(XY1, rectangle))
                     {
                         rec = rectangle;
                     }
                 }
                 if (rec != null)
                 {
-                    RectangleList.Remove(rec);
-                    rec.positionX = X1 - (X1 - X2);
-                    rec.positionY = Y1 - (Y1 - Y2);
-                    Graphics g = Graphics.FromImage(bmp);
-                    rec.RectangleDrow(g, rec.positionX, rec.positionY, rec.widthRectangle, rec.heightRectangle);
-                    RectangleList.Add(rec);
-                    g.Clear(Color.White);
-                    ariaG = pictureBox1.CreateGraphics();
-                    UpdatePictur.Update(LineList, RectangleList, g);
+                    RectanglesList.Remove(rec);
+                    rec.koord1.X = XY1.X - (XY1.X - XY2.X);
+                    rec.koord1.Y = XY1.Y - (XY1.Y - XY2.Y);
+                    rec.koord2.X = rec.koord1.X + rec.width;
+                    rec.koord2.Y = rec.koord1.Y + rec.heigh;
+                    Drowing.RectangleDrow(g, rec.koord1, rec.koord2, RectanglesList);
+                    foreach (Line line in LineList)
+                    {
+                        if (line.rectangle1 == rec)
+                        {
+                            line.rectangle1 = RectanglesList.Last();
+                        }
+                        if (line.rectangle2 == rec)
+                        {
+                            line.rectangle2 = RectanglesList.Last();
+                        }
+                    }
+                    UpdatePictur.Update(LineList, RectanglesList, g);
                     pictureBox1.Image = bmp;
                 }
             }
