@@ -14,7 +14,7 @@ namespace art
         public XYkoord XY2;
         public List<Line> LineList = new List<Line>();
         public List<Rectangle> RectanglesList = new List<Rectangle>();
-
+        public List<Rectangle> BlueRectanglesList = new List<Rectangle>();
         public Form1()
         {
             pictureBox1 = new PictureBox {Width = 500, Height = 500};
@@ -80,7 +80,13 @@ namespace art
             }
             if (radioButton2.Checked) //рисуем прямоугольники
             {
-                Drowing.RectangleDrow(g, XY1, XY2, RectanglesList);
+                Rectangle rectangle = new Rectangle();
+                Drowing.RectangleDrow(g, XY1, XY2, rectangle);
+            }
+            if (radioButton4.Checked) //рисуем прямоугольники синий
+            {
+                BlueRectangle rec = new BlueRectangle();
+                Drowing.RectangleDrow(g, XY1, XY2, rec);
             }
             if (radioButton3.Checked)
             {
@@ -100,7 +106,7 @@ namespace art
                     rec.koord1.Y = XY1.Y - (XY1.Y - XY2.Y);
                     rec.koord2.X = rec.koord1.X + rec.width;
                     rec.koord2.Y = rec.koord1.Y + rec.heigh;
-                    Drowing.RectangleDrow(g, rec.koord1, rec.koord2, RectanglesList);
+                    Drowing.RectangleDrow(g, rec.koord1, rec.koord2, rec);
                     foreach (Line line in LineList)
                     {
                         if (line.rectangle1 == rec)
